@@ -42,6 +42,17 @@ const MenuItemSchema = new mongoose.Schema({
 });
 const MenuItem = mongoose.model('MenuItem', MenuItemSchema);
 
+// Create a Database Model for Orders
+const OrderSchema = new mongoose.Schema({
+  customerName: String,
+  phone: String,
+  address: String,
+  items: Array,
+  totalAmount: Number,
+  status: { type: String, default: 'Pending' },
+  createdAt: { type: Date, default: Date.now }
+});
+const Order = mongoose.model('Order', OrderSchema);
 // Subscription Route
 app.post('/api/subscribe', async (req, res) => {
   const { email } = req.body;
@@ -102,6 +113,26 @@ app.post('/api/seed-menu', async (req, res) => {
     res.status(200).json({ message: 'Menu seeded successfully!' });
   } catch (error) {
     res.status(500).json({ message: 'Error seeding menu' });
+  }
+});
+
+// Order Routes
+app.post('/api/orders', async (req, res) => {
+  try {
+    const newOrder = new Order(req.body);
+    await newOrder.save();
+    res.status(201).json({ message: 'Order placed successfully!', order: newOrder });
+  } catch (error) {
+    res.status(500).json({ message: 'Error placing order' });
+  }
+});
+
+app.get('/api/orders', async (req, res) => {
+  try {
+    const orders = await Order.find().sort({ createdAt: -1 });
+    res.status(200).json(orders);
+  } catch (error) {
+    res.status(500).json({ message: 'Error fetching orders' });
   }
 });
 
